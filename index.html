@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <title>Neon Catch-Up</title>
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* 1. Reset Body for Loading State */
+        body {
+            background-color: #0f172a;
+            /* Matches Tailwind slate-900 */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Prevents scrolling during load */
+        }
+
+        /* 2. Centered Loader Container */
+        .app-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            background: #0f172a;
+            font-family: 'Orbitron', sans-serif;
+            /* Uses your font if loaded, falls back cleanly */
+        }
+
+        /* 3. Neon Spinner Ring */
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 229, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #00e5ff;
+            /* Cyan Neon */
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+        }
+
+        /* 4. Loading Text */
+        .loading-text {
+            color: #00e5ff;
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+            animation: pulse 1.5s ease-in-out infinite;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        /* 5. Progress Bar Track */
+        .progress-container {
+            width: 180px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 6. Moving Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 100%;
+            background: #00e5ff;
+            transform: translateX(-100%);
+            animation: loadProgress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            box-shadow: 0 0 15px #00e5ff;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes loadProgress {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            50% {
+                transform: translateX(-20%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <div class="app-loader">
+            <div class="spinner"></div>
+            <div class="loading-text">System Loading</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ SW Registered!', reg))
+                .catch(err => console.log('❌ SW Failed:', err));
+        }
+    </script>
+</body>
+
+</html>

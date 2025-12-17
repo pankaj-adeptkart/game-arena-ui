@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        /* FIX: Prevent address bar resize thrashing */
+        height: -webkit-fill-available;
+    }
+
+    body {
+        overscroll-behavior-y: none;
+        -webkit-font-smoothing: antialiased;
+        /* FIX: Lock body height to prevent layout jumps on scroll */
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+@layer utilities {
+
+    /* --- SAFE GLASS CLASS (iOS CRASH PROOF) --- */
+    .glass-neon {
+        /* 1. Hardware Acceleration Base */
+        transform: translate3d(0, 0, 0);
+
+        /* 2. Desktop Styles (High Performance) */
+        @apply backdrop-blur-xl bg-white/5 border border-white/20 rounded-2xl;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.25),
+            0 0 24px rgba(0, 229, 255, 0.25),
+            0 8px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* --- MOBILE OVERRIDE (THE FIX) --- */
+    /* Applies to all phones (Portrait & Landscape) */
+    @media (max-width: 1024px) {
+        .glass-neon {
+            /* CRITICAL: Turn off blur to stop the 'Hang' */
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+
+            /* Replace Glass with a solid semi-transparent color */
+            /* This looks identical but costs 0 GPU memory */
+            background: rgba(15, 23, 42, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+            /* Simplified Shadow */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+        }
+    }
+
+    /* --- SAFE PARTICLES --- */
+    #tsparticles canvas {
+        /* FIX: Lock canvas to viewport, never scroll with page */
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: -1 !important;
+        pointer-events: none;
+        /* Prevents iPhone from trying to upscale the canvas */
+        will-change: transform;
+    }
+
+    /* --- GPU UTILITY --- */
+    .gpu {
+        transform: translateZ(0);
+        /* Simpler transform for iOS */
+        backface-visibility: hidden;
+    }
+}
+
+@layer utilities {
+
+    /* AUTOMATIC PERFORMANCE UPGRADE 
+     Finds any element with a transition duration (e.g., duration-300, duration-500)
+     and automatically tells the GPU to prepare for it.
+  */
+    [class*="duration-"],
+    [class*="transition-"],
+    [class*="animate-"] {
+        /* Hints the browser to use GPU, but doesn't force a new layer instantly */
+        will-change: transform, opacity;
+    }
+
+    /* SPECIFIC FIX FOR HOVER SCALES
+     If you use 'hover:scale-105', this prevents blurry text during the scale 
+  */
+    [class*="hover:scale-"] {
+        backface-visibility: hidden;
+        -webkit-font-smoothing: subpixel-antialiased;
+    }
+}
