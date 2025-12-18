@@ -13,7 +13,6 @@ import { RenderAvatar3D } from "../../renderers/catchup_game/renderAvatar3D";
 export default function CatchUpGame({ profile }) {
     // 1. DETECT LOW POWER MODE
     const isLowPower = useLowPowerMode();
-
     const game = useCatchUpGame(profile);
 
     const {
@@ -21,19 +20,15 @@ export default function CatchUpGame({ profile }) {
         mode, names, status, setStatus, turbo, history, setHistory, aiDepth, hoverScore, setHoverScore,
         glitchActive, gridRef, p1NameInput, p2NameInput, ballCount,
         showSettings, previewIndex, isReplaying, isTV, sfx,
-
         setMode, setAiDepth, setBallCount, setP1NameInput,
         setP2NameInput, setTurbo, setShowSettings,
-
         startGame, confirmMove, handleBallClick,
         resetGameSession, handleInstall, tiltOptions, getAvatarConfig,
         previewState, installPrompt, setIsReplaying, setPreviewIndex,
-
         setGlitchActive, setAvailable, setScores, setIsP1Turn, setSelected,
         undoStackRef, redoStackRef,
         botPreview, setBotPreview,
     } = game;
-
 
     /* ===============================
         UI STATE ONLY
@@ -41,7 +36,6 @@ export default function CatchUpGame({ profile }) {
     const [showPlayAgain, setShowPlayAgain] = useState(false);
     const [showReplay, setShowReplay] = useState(false);
 
-    /* Show PLAY AGAIN only AFTER popup closed */
     useEffect(() => {
         if (!gameStarted && available.length === 0) {
             const t = setTimeout(() => setShowPlayAgain(true), 200);
@@ -49,177 +43,119 @@ export default function CatchUpGame({ profile }) {
         }
     }, [gameStarted, available.length]);
 
+    const handleUndo = () => { if (!gameStarted || mode === "bvb") return; const undoStack = undoStackRef.current; if (undoStack.length === 0) return; const steps = mode === "hvbot" ? 2 : 1; let snapshot = null; for (let i = 0; i < steps && undoStack.length; i++) { snapshot = undoStack.pop(); } if (!snapshot) return; redoStackRef.current.push({ available: [...available], scores: { ...scores }, isP1Turn }); setAvailable(snapshot.available); setScores(snapshot.scores); setIsP1Turn(snapshot.isP1Turn); setSelected([]); setStatus("UNDO"); };
+    const handleRedo = () => { if (!gameStarted || mode === "bvb") return; const redoStack = redoStackRef.current; if (redoStack.length === 0) return; const snapshot = redoStack.pop(); undoStackRef.current.push({ available: [...available], scores: { ...scores }, isP1Turn }); setAvailable(snapshot.available); setScores(snapshot.scores); setIsP1Turn(snapshot.isP1Turn); setSelected([]); setStatus("REDO"); };
 
-    const handleUndo = () => {
-        if (!gameStarted || mode === "bvb") return;
-        const undoStack = undoStackRef.current;
-        if (undoStack.length === 0) return;
-
-        const steps = mode === "hvbot" ? 2 : 1;
-        let snapshot = null;
-        for (let i = 0; i < steps && undoStack.length; i++) {
-            snapshot = undoStack.pop();
-        }
-        if (!snapshot) return;
-
-        redoStackRef.current.push({ available: [...available], scores: { ...scores }, isP1Turn });
-
-        // State updates immediately after
-        setAvailable(snapshot.available);
-        setScores(snapshot.scores);
-        setIsP1Turn(snapshot.isP1Turn);
-        setSelected([]);
-        setStatus("UNDO");
-    };
-
-    const handleRedo = () => {
-        if (!gameStarted || mode === "bvb") return;
-        const redoStack = redoStackRef.current;
-        if (redoStack.length === 0) return;
-
-        const snapshot = redoStack.pop();
-        undoStackRef.current.push({ available: [...available], scores: { ...scores }, isP1Turn });
-
-        setAvailable(snapshot.available);
-        setScores(snapshot.scores);
-        setIsP1Turn(snapshot.isP1Turn);
-        setSelected([]);
-        setStatus("REDO");
-    };
-
-    // OPTIMIZATION: Disable Tilt on Low Power Mode
     const optimizedTiltOptions = useMemo(() => {
-        return isLowPower
-            ? { tiltEnable: false, glareEnable: false }
-            : { max: 10, scale: 1.02, glare: true, "max-glare": 0.2 };
+        return isLowPower ? { tiltEnable: false, glareEnable: false } : { max: 10, scale: 1.02, glare: true, "max-glare": 0.2 };
     }, [isLowPower]);
 
     return (
         <div className={`
-            relative min-h-screen w-full overflow-x-hidden
-            bg-[#0B0C15]/90 text-white font-sans selection:bg-cyan-500/30
+            relative w-full h-[100dvh] overflow-hidden
+            bg-[#050508] text-white font-sans selection:bg-cyan-500/30
+            flex flex-col
             ${glitchActive ? "glitch-anim" : ""}
         `}>
 
-            {/* --- GLOBAL AMBIENT GLOW (OPTIMIZED) --- */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            {/* --- 0. BACKGROUND LAYER --- */}
+            <div className="fixed inset-0 pointer-events-none z-0">
                 {!isLowPower && (
                     <>
-                        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-                        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+                        <div className="absolute top-[-20%] left-[20%] w-[50vw] h-[50vw] bg-cyan-900/10 rounded-full blur-[100px]" />
+                        <div className="absolute bottom-[-20%] right-[20%] w-[50vw] h-[50vw] bg-fuchsia-900/10 rounded-full blur-[100px]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050508_90%)]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30 [transform:perspective(1000px)_rotateX(20deg)] origin-bottom" />
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
                     </>
                 )}
-                {/* Low Power fallback: Just the dark background color defined in parent div */}
             </div>
 
             {/* --- MAIN CONTENT LAYER --- */}
-            <div className="relative z-10 flex flex-col min-h-screen p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto">
+            <div className="relative z-10 flex flex-col h-full w-full max-w-[1600px] mx-auto p-0 md:p-4 gap-0 md:gap-4">
 
-                {/* 1. HEADER / SETTINGS */}
-                <div className={`mb-6 lg:mb-10 transition-all duration-500 ${!gameStarted ? 'mt-[10vh] lg:mt-0' : ''}`}>
+                {/* 1. HEADER (Settings) */}
+                <div className="flex-none z-30 px-2 pt-2 md:px-0 md:pt-0">
                     <SettingsBar
-                        mode={mode}
-                        setMode={setMode}
-                        aiDepth={aiDepth}
-                        setAiDepth={setAiDepth}
-                        ballCount={ballCount}
-                        setBallCount={setBallCount}
-                        gameStarted={gameStarted}
-                        startGame={startGame}
-                        p1Name={p1NameInput}
-                        setP1Name={setP1NameInput}
-                        p2Name={p2NameInput}
-                        setP2Name={setP2NameInput}
-                        isTV={isTV}
+                        mode={mode} setMode={setMode} aiDepth={aiDepth} setAiDepth={setAiDepth} ballCount={ballCount} setBallCount={setBallCount} gameStarted={gameStarted} startGame={startGame} p1Name={p1NameInput} setP1Name={setP1NameInput} p2Name={p2NameInput} setP2Name={setP2NameInput} isTV={isTV}
                     />
                 </div>
 
                 {/* 2. GAME ARENA */}
+                {/* FIX: 'hidden lg:flex' ensures that on MOBILE, this entire section is hidden until gameStarted is true */}
                 <div className={`
-                    flex-1 flex-col lg:flex-row items-start justify-center gap-6 xl:gap-12 pb-40 lg:pb-0
+                    flex-1 min-h-0 relative items-center justify-center
                     ${!gameStarted ? "hidden lg:flex" : "flex"} 
                 `}>
 
-                    {/* LEFT: PLAYER 1 */}
-                    <div className="w-full lg:w-auto order-1 lg:order-1 flex flex-col gap-6">
-                        <Player1Panel
-                            avatar={
-                                <RenderAvatar3D
-                                    player="p1"
-                                    mode={mode}
-                                    isTurn={isP1Turn}
-                                    scores={scores}
-                                    available={available}
-                                    names={names}
-                                />
-                            }
-                            wins={wins}
-                            scores={scores}
-                            isP1Turn={isP1Turn}
-                            tiltOptions={optimizedTiltOptions}
-                            names={names}
-                        />
+                    {/* LAYOUT GRID */}
+                    <div className={`
+                        w-full h-full 
+                        flex flex-col lg:grid lg:grid-cols-[minmax(260px,320px)_1fr_minmax(260px,320px)]
+                        /* Mobile Spacing */
+                        gap-2 p-2 pb-32
+                        /* Desktop Spacing */
+                        lg:gap-8 lg:p-4 lg:pb-0
+                        overflow-y-auto lg:overflow-visible no-scrollbar
+                    `}>
+
+                        {/* --- TOP: PLAYER 1 --- */}
+                        <div className={`
+                            w-full max-w-md mx-auto lg:max-w-none flex-shrink-0 min-h-[80px] order-1 lg:order-1 transition-all duration-700
+                            ${!gameStarted ? 'opacity-40 blur-sm scale-95 lg:opacity-100 lg:blur-0 lg:scale-100' : 'opacity-100'}
+                        `}>
+                            <Player1Panel avatar={<RenderAvatar3D player="p1" mode={mode} isTurn={isP1Turn} scores={scores} available={available} names={names} />} wins={wins} scores={scores} isP1Turn={isP1Turn} tiltOptions={optimizedTiltOptions} names={names} />
+                        </div>
+
+                        {/* --- CENTER: BOARD --- */}
+                        <div className="w-full flex flex-col items-center justify-center order-2 lg:order-2 z-20 my-auto">
+                            <CenterStageBoard
+                                isP1Turn={isP1Turn}
+                                status={status}
+                                gridRef={gridRef}
+                                available={available}
+                                selected={selected}
+                                botPreview={botPreview}
+                                handleBallClick={handleBallClick}
+                                gameStarted={gameStarted}
+                                mode={mode}
+                                undoStackRef={undoStackRef}
+                                redoStackRef={redoStackRef}
+                                handleUndo={handleUndo}
+                                handleRedo={handleRedo}
+                                confirmMove={confirmMove}
+                            />
+
+                            <ReplayPanel
+                                gameStarted={gameStarted}
+                                history={history}
+                                showReplay={showReplay}
+                                setShowReplay={setShowReplay}
+                                setShowPlayAgain={setShowPlayAgain}
+                                startGame={startGame}
+                                previewState={previewState}
+                                names={names}
+                            />
+                        </div>
+
+                        {/* --- BOTTOM: PLAYER 2 --- */}
+                        <div className={`
+                            w-full max-w-md mx-auto lg:max-w-none flex-shrink-0 min-h-[80px] order-3 lg:order-3 transition-all duration-700
+                            ${!gameStarted ? 'opacity-40 blur-sm scale-95 lg:opacity-100 lg:blur-0 lg:scale-100' : 'opacity-100'}
+                        `}>
+                            <Player2Panel avatar={<RenderAvatar3D player="p2" mode={mode} isTurn={!isP1Turn} scores={scores} available={available} names={names} />} wins={wins} scores={scores} isP1Turn={isP1Turn} tiltOptions={optimizedTiltOptions} names={names} />
+                        </div>
+
                     </div>
-
-                    {/* CENTER: GAME BOARD */}
-                    <div className="w-full flex-1 order-2 lg:order-2 flex flex-col items-center">
-                        <CenterStageBoard
-                            isP1Turn={isP1Turn}
-                            status={status}
-                            gridRef={gridRef}
-                            available={available}
-                            selected={selected}
-                            botPreview={botPreview}
-                            handleBallClick={handleBallClick}
-                            gameStarted={gameStarted}
-                            mode={mode}
-                            undoStackRef={undoStackRef}
-                            redoStackRef={redoStackRef}
-                            handleUndo={handleUndo}
-                            handleRedo={handleRedo}
-                            confirmMove={confirmMove}
-                        />
-
-                        {/* REPLAY PANEL */}
-                        <ReplayPanel
-                            gameStarted={gameStarted}
-                            history={history}
-                            showReplay={showReplay}
-                            setShowReplay={setShowReplay}
-                            setShowPlayAgain={setShowPlayAgain}
-                            startGame={startGame}
-                            previewState={previewState}
-                            names={names}
-                        />
-                    </div>
-
-                    {/* RIGHT: PLAYER 2 */}
-                    <div className="w-full lg:w-auto order-3 lg:order-3 flex flex-col gap-6">
-                        <Player2Panel
-                            avatar={
-                                <RenderAvatar3D
-                                    player="p2"
-                                    mode={mode}
-                                    isTurn={!isP1Turn}
-                                    scores={scores}
-                                    available={available}
-                                    names={names}
-                                />
-                            }
-                            wins={wins}
-                            scores={scores}
-                            isP1Turn={isP1Turn}
-                            tiltOptions={optimizedTiltOptions}
-                            names={names}
-                        />
-                    </div>
-
                 </div>
 
+                {/* 3. DESKTOP FOOTER */}
+                <div className="flex-none z-30 hidden lg:block">
+                    <DesktopFooterControls turbo={turbo} setTurbo={setTurbo} resetGameSession={resetGameSession} setShowSettings={setShowSettings} setStatus={setStatus} sfx={sfx} />
+                </div>
             </div>
 
-            {/* --- MOBILE ACTION BAR (Fixed Bottom) --- */}
+            {/* --- 4. MOBILE ACTION BAR (Fixed Bottom) --- */}
             <MobileActionBar
                 gameStarted={gameStarted}
                 available={available}
@@ -241,17 +177,6 @@ export default function CatchUpGame({ profile }) {
                 setStatus={setStatus}
                 sfx={sfx}
             />
-
-            {/* --- DESKTOP FOOTER CONTROLS --- */}
-            <DesktopFooterControls
-                turbo={turbo}
-                setTurbo={setTurbo}
-                resetGameSession={resetGameSession}
-                setShowSettings={setShowSettings}
-                setStatus={setStatus}
-                sfx={sfx}
-            />
-
         </div>
     );
 }

@@ -3,7 +3,7 @@ import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 
 // ✅ ACCEPT PROP: effectIndex
-const ParticlesBackground = ({ effectIndex = 0 }) => {
+const ParticlesBackground = React.memo(({ effectIndex = 0 }) => {
     const [init, setInit] = useState(false);
 
     useEffect(() => {
@@ -35,6 +35,7 @@ const ParticlesBackground = ({ effectIndex = 0 }) => {
                         move: { speed: 1.5 } // Slow down movement slightly
                     },
                     interactivity: {
+                        detectsOn: "window",
                         events: {
                             // Disable mouse tracking on mobile (saves CPU)
                             onHover: { enable: false }
@@ -159,6 +160,6 @@ const ParticlesBackground = ({ effectIndex = 0 }) => {
     }
 
     return <></>;
-};
+});
 
 export default ParticlesBackground;

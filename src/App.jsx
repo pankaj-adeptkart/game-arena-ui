@@ -8,10 +8,10 @@ import ProfilePanel from './components/ProfilePanel';
 import { useLowPowerMode } from './config/useLowPowerMode';
 import './styles/Tailwind.css';
 import Background from './components/wallpaper/Background';
+// IMPORT THE NEW COMPONENT
+import ProfileDropdown from './components/common/ProfileDropdown';
 
 const Header = lazy(() => import('./components/common/GameHeader'));
-
-const AVATARS = ['😎', '🤖', '🧠', '👩‍🚀', '👾', '🛸', '🐉', '🦄', '🧩', '🦊', '🦁', '🐵', '💀', '👻'];
 
 function App() {
     const isLowPower = useLowPowerMode();
@@ -67,89 +67,17 @@ function App() {
     const nextEffect = () => setEffectIndex(p => (p + 1) % 8);
     const toggleSound = () => { Howler.mute(!isMuted); setIsMuted(!isMuted); };
     const handleProfileUpdate = (newProfile) => { setProfile(newProfile); setTempProfile(newProfile); };
-    const saveProfileChanges = () => { setProfile(tempProfile); setIsEditingProfile(false); setShowDropdown(false); };
 
-    // --- RENDER DROPDOWN ---
-    const renderDropdown = () => (
-        <div
-            ref={dropdownRef}
-            className="w-[280px] bg-[#14141e]/98 backdrop-blur-xl border border-white/15 rounded-[20px] shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden animate-fadeIn"
-        >
-            <div className="bg-gradient-to-br from-white/5 to-transparent p-5 flex items-center gap-4 border-b border-white/5">
-                <div className="text-5xl">{isEditingProfile ? tempProfile.avatar : profile.avatar}</div>
-                <div className="flex flex-col">
-                    <div className="text-xl font-extrabold break-all" style={{ color: isEditingProfile ? tempProfile.color : profile.color }}>
-                        {isEditingProfile ? tempProfile.name : profile.name}
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">LEVEL 1</div>
-                </div>
-            </div>
+    const saveProfileChanges = () => {
+        setProfile(tempProfile);
+        setIsEditingProfile(false);
+        setShowDropdown(false);
+    };
 
-            <div className="p-4">
-                {isEditingProfile ? (
-                    <div className="flex flex-col gap-3">
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 mb-1 block">NAME</label>
-                            <input
-                                type="text"
-                                className="w-full bg-black/30 border border-white/10 text-white p-2.5 rounded-lg focus:outline-none focus:border-cyan-500 transition-colors text-sm font-bold"
-                                value={tempProfile.name}
-                                onChange={e => setTempProfile({ ...tempProfile, name: e.target.value })}
-                                maxLength={10}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 mb-2 block">COLOR</label>
-                            <div className="flex gap-2.5">
-                                {['#00e5ff', '#d500f9', '#ffd700', '#ff1744', '#00e676'].map(c => (
-                                    <div
-                                        key={c}
-                                        className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-transform hover:scale-110 ${tempProfile.color === c ? 'border-white scale-110' : 'border-transparent'}`}
-                                        style={{ background: c }}
-                                        onClick={() => setTempProfile({ ...tempProfile, color: c })}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 mb-1 block">AVATAR</label>
-                            <div className="grid grid-cols-5 gap-1.5">
-                                {AVATARS.map(a => (
-                                    <button
-                                        key={a}
-                                        className={`text-2xl p-1 rounded-lg border transition-colors ${tempProfile.avatar === a ? 'border-cyan-400 bg-cyan-400/20' : 'border-white/10 hover:bg-white/10'}`}
-                                        onClick={() => setTempProfile({ ...tempProfile, avatar: a })}
-                                    >
-                                        {a}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <button
-                            className="w-full bg-cyan-400 text-black font-extrabold p-3 rounded-xl mt-2 hover:bg-cyan-300 active:scale-95 transition-all"
-                            onClick={saveProfileChanges}
-                        >
-                            SAVE
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-1">
-                        <MenuRow icon="fa-user-pen" label="Edit Profile" onClick={() => { setTempProfile(profile); setIsEditingProfile(true); }} />
-                        <MenuRow icon="fa-image" label="Change Wallpaper" onClick={toggleWallpaper} />
-                        {!isLowPower && <MenuRow icon="fa-wand-magic-sparkles" label="Magic Effect" onClick={nextEffect} />}
-                        <MenuRow
-                            icon={isMuted ? "fa-volume-xmark" : "fa-volume-high"}
-                            label={`Sound: ${isMuted ? 'OFF' : 'ON'}`}
-                            onClick={toggleSound}
-                        />
-                        {currentView !== 'home' && (
-                            <MenuRow icon="fa-house" label="Main Menu" onClick={() => { setCurrentView('home'); setShowDropdown(false); }} highlight />
-                        )}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+    const handleNavigateHome = () => {
+        setCurrentView('home');
+        setShowDropdown(false);
+    };
 
     return (
         <div className="relative w-full h-screen overflow-hidden text-white font-sans selection:bg-cyan-500/30">
@@ -175,14 +103,28 @@ function App() {
                     />
                 </Suspense>
 
+                {/* --- EXTRACTED COMPONENT USAGE --- */}
                 {showDropdown && (
-                    <div className="absolute top-[70px] right-4 z-[60]">
-                        {renderDropdown()}
-                    </div>
+                    <ProfileDropdown
+                        dropdownRef={dropdownRef}
+                        profile={profile}
+                        tempProfile={tempProfile}
+                        setTempProfile={setTempProfile}
+                        isEditingProfile={isEditingProfile}
+                        setIsEditingProfile={setIsEditingProfile}
+                        onSaveProfile={saveProfileChanges}
+                        toggleWallpaper={toggleWallpaper}
+                        nextEffect={nextEffect}
+                        toggleSound={toggleSound}
+                        isMuted={isMuted}
+                        isLowPower={isLowPower}
+                        currentView={currentView}
+                        onNavigateHome={handleNavigateHome}
+                        onClose={() => setShowDropdown(false)} // Pass close handler
+                    />
                 )}
 
-                <div className="min-h-screen w-full max-w-none overflow-x-hidden">
-                    {/* FIX: PASS INSTALL PROPS HERE */}
+                <div className="min-h-screen w-full max-w-none overflow-x-hidden flex-1 overflow-y-auto relative scrollbar-hide pt-8 md:pt-8 lg:pt-5 sm:pt-24">
                     {currentView === 'home' && (
                         <GameSelection
                             onSelectGame={setCurrentView}
@@ -203,14 +145,5 @@ function App() {
         </div>
     );
 }
-
-const MenuRow = ({ icon, label, onClick, highlight }) => (
-    <div
-        className={`flex items-center gap-3 p-3 rounded-xl font-medium cursor-pointer transition-colors ${highlight ? 'text-white bg-white/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}
-        onClick={onClick}
-    >
-        <i className={`fa-solid ${icon} w-6 text-center text-cyan-400`}></i> {label}
-    </div>
-);
 
 export default App;
