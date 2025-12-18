@@ -84,6 +84,8 @@ function App() {
             <ProfilePanel onProfileChange={handleProfileUpdate} />
 
             <Background activeIndex={wallpaperIdx} />
+            {/* ADD THIS LINE HERE */}
+            <div className="pointer-events-none fixed inset-0 z-[5] opacity-[0.04]" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
 
             {!isLowPower && <ParticlesBackground effectIndex={effectIndex} />}
 

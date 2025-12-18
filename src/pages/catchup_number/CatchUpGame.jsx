@@ -53,7 +53,7 @@ export default function CatchUpGame({ profile }) {
     return (
         <div className={`
             relative w-full h-[100dvh] overflow-hidden
-            bg-[#050508] text-white font-sans selection:bg-cyan-500/30
+            bg-[#050508]/30 text-white font-sans selection:bg-cyan-500/30
             flex flex-col
             ${glitchActive ? "glitch-anim" : ""}
         `}>
