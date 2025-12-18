@@ -9,39 +9,40 @@ const Header = ({
 }) => {
     const isLowPower = useLowPowerMode();
 
-    // --- LITE MODE (No Framer Motion, No Blur, No Shadows) ---
-    // Renders standard HTML/CSS for maximum FPS on Android
+    // --- SHARED STYLES ---
+    // Reduced height from h-16 to h-12 (mobile) / h-14 (desktop)
+    const glassContainer = "fixed top-0 left-0 right-0 z-50 h-12 md:h-14 px-3 md:px-6 flex items-center justify-between border-b border-white/5";
+    const logoTextGradient = "bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-white to-fuchsia-300";
+
+    // --- LITE MODE ---
     if (isLowPower) {
         return (
-            <div className="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 px-2 md:px-8 flex items-center justify-between bg-slate-950 border-b border-white/10">
-                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-cyan-500/30" />
-
-                {/* Left: Logo/Back */}
-                <div className="flex items-center gap-3 flex-none md:flex-1">
+            <div className={`${glassContainer} bg-[#05050a] border-b-cyan-500/20`}>
+                <div className="flex-1 flex items-center">
                     {currentView !== 'home' ? (
-                        <button onClick={() => setCurrentView('home')} className="w-10 h-10 flex items-center justify-center text-white active:opacity-50">
-                            <i className="fa-solid fa-chevron-left"></i>
+                        <button onClick={() => setCurrentView('home')} className="w-8 h-8 flex items-center justify-center text-white active:opacity-50">
+                            <i className="fa-solid fa-chevron-left text-sm"></i>
                         </button>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <i className="fa-solid fa-gamepad text-xl text-fuchsia-500"></i>
-                            <span className="font-bold text-lg text-white">NEON ARCADE</span>
+                            <i className="fa-solid fa-gamepad text-fuchsia-500 text-lg"></i>
+                            <span className="font-bold text-sm text-white tracking-wider">NEON</span>
                         </div>
                     )}
                 </div>
 
-                {/* Center: Controls (Simplified) */}
-                <div className="flex justify-center flex-1">
-                    <div className="flex items-center gap-4 bg-slate-900 rounded-full px-4 py-1.5 border border-white/5">
-                        <button onClick={toggleWallpaper}><i className="fa-solid fa-image text-slate-300"></i></button>
-                        <button onClick={nextEffect}><i className="fa-solid fa-wand-magic-sparkles text-slate-300"></i></button>
-                        <button onClick={toggleSound}><i className={`fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-volume-high'} text-slate-300`}></i></button>
-                    </div>
+                {/* Center Controls */}
+                <div className="flex bg-white/5 rounded-full px-1 border border-white/10 gap-1">
+                    <LiteBtn onClick={toggleWallpaper} icon="fa-image" />
+                    <LiteBtn onClick={nextEffect} icon="fa-wand-magic-sparkles" />
+                    <LiteBtn onClick={toggleSound} icon={isMuted ? "fa-volume-xmark" : "fa-volume-high"} />
                 </div>
 
-                {/* Right: Avatar */}
-                <div className="flex items-center justify-end flex-none md:flex-1">
-                    <button onClick={() => { setIsEditingProfile(false); setShowDropdown(!showDropdown); }} className="w-9 h-9 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center">
+                <div className="flex-1 flex justify-end">
+                    <button
+                        onClick={() => { setIsEditingProfile(false); setShowDropdown(!showDropdown); }}
+                        className="w-7 h-7 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center text-xs"
+                    >
                         {profile.avatar}
                     </button>
                 </div>
@@ -49,88 +50,103 @@ const Header = ({
         );
     }
 
-    // --- PRO MODE (Original High-End Animations) ---
+    // --- PRO MODE (Compact & Glassy) ---
     return (
         <motion.header
-            initial={{ y: -100, opacity: 0 }}
+            initial={{ y: -80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            // Optimization: will-change-transform tells browser to prepare GPU
-            className="fixed top-0 left-0 right-0 z-50 h-20 px-4 md:px-8 flex items-center justify-between
-                 bg-slate-950/80 backdrop-blur-md border-b border-white/10
-                 shadow-lg will-change-transform"
+            transition={{ type: "spring", stiffness: 90, damping: 15 }}
+            className={`${glassContainer} bg-[#0a0a12]/70 backdrop-blur-md shadow-sm`}
         >
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+            {/* Subtle bottom line */}
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            <div className="flex items-center gap-4 flex-1">
+            {/* --- LEFT --- */}
+            <div className="flex-1 flex items-center gap-3">
                 <AnimatePresence mode="wait">
                     {currentView !== 'home' ? (
                         <motion.button
                             key="back"
-                            whileHover={{ scale: 1.1 }}
+                            initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setCurrentView('home')}
-                            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white"
+                            className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white bg-white/5 hover:bg-white/10"
                         >
-                            <i className="fa-solid fa-chevron-left"></i>
+                            <i className="fa-solid fa-chevron-left text-xs"></i>
                         </motion.button>
                     ) : (
-                        <motion.div key="logo" className="flex items-center gap-3">
-                            <div className="relative">
-                                <i className="fa-solid fa-gamepad text-2xl text-fuchsia-500 z-10 relative"></i>
-                                <motion.div
-                                    animate={{ opacity: [0.5, 1, 0.5] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                    className="absolute inset-0 text-2xl text-fuchsia-500 blur-sm"
-                                ><i className="fa-solid fa-gamepad"></i></motion.div>
-                            </div>
-                            <span className="font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-fuchsia-300">
-                                NEON ARCADE
+                        <motion.div
+                            key="logo"
+                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-2 select-none"
+                        >
+                            <i className="fa-solid fa-gamepad text-lg text-fuchsia-500"></i>
+                            <span className={`hidden md:block font-extrabold text-base tracking-[0.15em] ${logoTextGradient}`}>
+                                ARCADE
                             </span>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
-            <div className="flex justify-center flex-1">
-                <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-full p-1.5 backdrop-blur-sm">
-                    {[
-                        { fn: toggleWallpaper, icon: "fa-image" },
-                        { fn: nextEffect, icon: "fa-wand-magic-sparkles" },
-                        { fn: toggleSound, icon: isMuted ? "fa-volume-xmark" : "fa-volume-high" }
-                    ].map((item, idx) => (
-                        <motion.button
-                            key={idx}
-                            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={item.fn}
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-300 hover:text-cyan-300 transition-colors"
-                        >
-                            <i className={`fa-solid ${item.icon}`}></i>
-                        </motion.button>
-                    ))}
+            {/* --- CENTER: SLIM ISLAND --- */}
+            <div className="flex items-center justify-center">
+                <div className="flex items-center px-1 py-0.5 gap-0.5 bg-black/40 border border-white/10 rounded-full backdrop-blur-md shadow-lg">
+                    <ControlBtn onClick={toggleWallpaper} icon="fa-image" />
+                    <div className="w-[1px] h-3 bg-white/10 mx-0.5"></div>
+                    <ControlBtn onClick={nextEffect} icon="fa-wand-magic-sparkles" />
+                    <div className="w-[1px] h-3 bg-white/10 mx-0.5"></div>
+                    <ControlBtn
+                        onClick={toggleSound}
+                        icon={isMuted ? "fa-volume-xmark" : "fa-volume-high"}
+                        active={!isMuted}
+                        color={isMuted ? "text-slate-500" : "text-green-400"}
+                    />
                 </div>
             </div>
 
-            <div className="flex items-center justify-end flex-1">
-                <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+            {/* --- RIGHT: COMPACT PROFILE --- */}
+            <div className="flex-1 flex justify-end">
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => { setIsEditingProfile(false); setShowDropdown(!showDropdown); }}
-                    className="cursor-pointer flex items-center gap-3 px-1 md:px-4 py-1 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
+                    className={`flex items-center gap-2 pl-0.5 pr-0.5 md:pr-3 py-0.5 rounded-full border transition-all duration-300
+                    ${showDropdown
+                            ? 'bg-cyan-500/10 border-cyan-500/40'
+                            : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'}`}
                 >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center text-lg shadow-lg">
+                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-b from-indigo-500 to-violet-600 flex items-center justify-center text-sm shadow-inner ring-1 ring-white/20">
                         {profile.avatar}
                     </div>
-                    <div className="hidden md:flex flex-col items-start leading-none">
-                        <span className="font-bold text-sm text-white">{profile.name}</span>
-                        <span className="text-[10px] text-slate-400">LVL 1</span>
+                    <div className="hidden md:flex flex-col items-start leading-none gap-[1px]">
+                        <span className="font-bold text-[10px] text-white tracking-wide">{profile.name}</span>
+                        <span className="text-[8px] font-bold text-cyan-500 uppercase tracking-wider">LVL 1</span>
                     </div>
-                </motion.div>
+                </motion.button>
             </div>
         </motion.header>
     );
 };
 
-// Memoizing prevents re-renders if parent props haven't changed
+// --- SUB COMPONENTS (Scaled Down) ---
+
+const LiteBtn = ({ onClick, icon }) => (
+    <button onClick={onClick} className="w-8 h-8 flex items-center justify-center text-slate-400 active:text-white">
+        <i className={`fa-solid ${icon} text-xs`}></i>
+    </button>
+);
+
+const ControlBtn = ({ onClick, icon, active, color = "text-slate-400" }) => (
+    <motion.button
+        whileHover={{ scale: 1.1, color: "#fff" }}
+        whileTap={{ scale: 0.9 }}
+        onClick={onClick}
+        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors relative ${color}`}
+    >
+        <i className={`fa-solid ${icon} text-xs`}></i>
+        {active && <span className="absolute bottom-1.5 w-0.5 h-0.5 bg-current rounded-full shadow-[0_0_4px_currentColor]"></span>}
+    </motion.button>
+);
+
 export default memo(Header);

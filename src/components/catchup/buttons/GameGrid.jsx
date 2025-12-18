@@ -7,7 +7,7 @@ import { useLowPowerMode } from "../../../config/useLowPowerMode";
 ===================================================== */
 // React.memo prevents the 20+ other balls from re-rendering when you click just one.
 const NeonBall = React.memo(({ num, isSelected, isP1Turn, onClick, isLowPower }) => {
-    const baseStyle = "relative flex items-center justify-center rounded-full transition-all duration-200 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 font-bold text-sm md:text-lg select-none touch-manipulation";
+    const baseStyle = "relative flex items-center justify-center rounded-full transition-all duration-200 w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 font-bold text-sm md:text-lg select-none touch-manipulation";
 
     // --- LITE MODE (CSS Only) ---
     if (isLowPower) {
@@ -58,59 +58,43 @@ const NeonBall = React.memo(({ num, isSelected, isP1Turn, onClick, isLowPower })
 export default function GameGrid({ status, isP1Turn, available, selected, botPreview = [], handleBallClick }) {
     const isLowPower = useLowPowerMode();
 
-    // STATUS HUD
-    const StatusHUD = () => (
-        <div className={`flex justify-center mb-3 px-4 py-1.5 rounded-full border flex items-center gap-2 transition-colors duration-300
-            ${isP1Turn ? "bg-cyan-950 border-cyan-500/50 text-cyan-100" : "bg-fuchsia-950 border-fuchsia-500/50 text-fuchsia-100"}`}>
-            <div className={`w-2 h-2 rounded-full ${isP1Turn ? 'bg-cyan-400' : 'bg-fuchsia-400'} ${!isLowPower && 'animate-pulse'}`} />
-            <span className="font-bold tracking-widest uppercase text-[10px] md:text-xs">{status}</span>
-        </div>
-    );
-
     return (
-        <div className="w-full max-w-2xl mx-auto my-2 relative z-10 flex flex-col items-center">
-            <StatusHUD />
+        <div className="w-full max-w-2xl mx-auto relative z-10 flex flex-col items-center">
+
+            {/* STATUS PILL - Compact */}
+            <div className={`flex justify-center mb-2 px-3 py-1 rounded-full border border-white/10 bg-black/40 backdrop-blur-md flex items-center gap-2 transition-colors duration-300`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${isP1Turn ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'bg-fuchsia-400 shadow-[0_0_8px_#e879f9]'}`} />
+                <span className="font-bold tracking-[0.2em] uppercase text-[9px] md:text-xs text-slate-300">{status}</span>
+            </div>
 
             <div
-                // OPTIMIZATION: 'contain: content' prevents layout shifts affecting the rest of the page
                 style={{ contain: 'content' }}
                 className={`
-                    relative w-full rounded-3xl p-4 md:p-6 flex flex-wrap justify-center gap-2 md:gap-3 min-h-fit items-center content-center
-                    ${isLowPower
-                        ? "bg-[#020617] border border-slate-800 shadow-xl" // Dark OLED look (Fast)
-                        : "bg-slate-950/40 backdrop-blur-xl border transition-colors duration-500" // Glass look (Heavy)
-                    }
+                    relative w-full flex flex-wrap justify-center gap-2 min-h-fit items-center content-center
+                    /* MOBILE: Transparent, No Padding, No Border */
+                    p-1 bg-transparent border-none shadow-none
+                    /* DESKTOP: Glass Container */
+                    md:p-6 md:rounded-3xl md:gap-3 
+                    ${!isLowPower && "md:bg-slate-950/40 md:backdrop-blur-xl md:border md:border-white/10 md:shadow-2xl"}
                 `}
             >
-                {/* Static Grid for Low Power */}
-                {isLowPower ? (
-                    available.map((num) => (
+                <AnimatePresence mode="popLayout">
+                    {available.map((num) => (
                         <NeonBall
                             key={num}
                             num={num}
-                            isLowPower={true}
+                            isLowPower={isLowPower}
                             isSelected={selected.includes(num) || botPreview.includes(num)}
                             isP1Turn={isP1Turn}
                             onClick={() => handleBallClick(num)}
                         />
-                    ))
-                ) : (
-                    <AnimatePresence mode="popLayout">
-                        {available.map((num) => (
-                            <NeonBall
-                                key={num}
-                                num={num}
-                                isLowPower={false}
-                                isSelected={selected.includes(num) || botPreview.includes(num)}
-                                isP1Turn={isP1Turn}
-                                onClick={() => handleBallClick(num)}
-                            />
-                        ))}
-                    </AnimatePresence>
-                )}
+                    ))}
+                </AnimatePresence>
 
                 {available.length === 0 && (
-                    <div className="text-center py-4 opacity-50"><div className="text-2xl font-black">00</div><div className="text-[10px]">CLEAR</div></div>
+                    <div className="text-center py-10 opacity-50">
+                        <div className="text-4xl font-black text-white/20">EMPTY</div>
+                    </div>
                 )}
             </div>
         </div>
