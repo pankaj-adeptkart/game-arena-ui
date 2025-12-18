@@ -1,5 +1,4 @@
-import Tilt from "react-parallax-tilt";
-import { motion } from "framer-motion";
+
 import ReplayTimeline from "../../components/replay/ReplayTimeline";
 import { DesktopControlPanel, PlayAgainButton, ReplayButton } from "../../components/catchup/buttons/PlayButton";
 import PlayerCard from "./buttons/PlayerCardButton";
@@ -9,7 +8,7 @@ import { useLowPowerMode } from "../../config/useLowPowerMode"; // Added Hook
 /* =====================================
    BASE PANEL (internal reusable)
 ===================================== */
-function BasePlayerPanel({ avatar, name, wins, score, active, tiltOptions }) {
+function BasePlayerPanel({ avatar, name, wins, score, active, isP1Turn, tiltOptions }) {
     return (
         <div className="w-full flex justify-center lg:h-full lg:items-start">
             <PlayerCard
@@ -18,6 +17,7 @@ function BasePlayerPanel({ avatar, name, wins, score, active, tiltOptions }) {
                 wins={wins}
                 score={score}
                 active={active}
+                isP1Turn={isP1Turn}
                 className="w-full max-w-[500px] lg:max-w-none"
             />
         </div>
@@ -35,6 +35,7 @@ export function Player1Panel({ avatar, wins, scores, isP1Turn, tiltOptions, name
             wins={wins.p1}
             score={scores.p1}
             active={isP1Turn}
+            isP1Turn={true}
             tiltOptions={tiltOptions}
         />
     );
@@ -51,6 +52,7 @@ export function Player2Panel({ avatar, wins, scores, isP1Turn, tiltOptions, name
             wins={wins.p2}
             score={scores.p2}
             active={!isP1Turn}
+            isP1Turn={false}
             tiltOptions={tiltOptions}
         />
     );

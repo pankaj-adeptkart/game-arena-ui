@@ -175,7 +175,7 @@ const ProfileDropdown = ({
                     ) : (
                         /* Menu List */
                         <div className="flex flex-col gap-1">
-                            <MenuRow icon="fa-user-pen" label="Edit ID" onClick={() => { setTempProfile(profile); setIsEditingProfile(true); }} />
+                            <MenuRow icon="fa-user-pen" label="Edit Name" onClick={() => { setTempProfile(profile); setIsEditingProfile(true); }} />
                             <MenuRow icon="fa-image" label="Wallpaper" onClick={toggleWallpaper} />
                             {!isLowPower && <MenuRow icon="fa-wand-magic-sparkles" label="FX Mode" onClick={nextEffect} />}
                             <MenuRow
